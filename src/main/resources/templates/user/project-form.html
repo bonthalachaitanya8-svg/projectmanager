@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${project.id == null} ? 'New Project' : 'Edit Project'">Project Form</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>
+        body { background: #f0f2f5; }
+        .form-card { border: none; border-radius: 14px; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
+        .upload-area { border: 2px dashed #1565c0; border-radius: 12px; padding: 1.5rem; text-align: center; background: #f0f7ff; cursor: pointer; transition: all 0.2s; }
+        .upload-area:hover { background: #e3f0ff; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: userNavbar}"></div>
+
+<div class="container py-4" style="max-width: 750px;">
+
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle-fill me-2"></i><span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMsg}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i><span th:text="${errorMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/user/dashboard}">My Projects</a></li>
+            <li class="breadcrumb-item active" th:text="${project.id == null} ? 'New Project' : 'Edit Project'"></li>
+        </ol>
+    </nav>
+
+    <div class="card form-card">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-4">
+                <i class="bi bi-folder-plus me-2 text-primary"></i>
+                <span th:text="${project.id == null} ? 'Create New Project' : 'Edit Project'"></span>
+            </h5>
+
+            <!-- New project uses /user/project/save, edit uses /user/project/update -->
+            <form th:action="${project.id == null} ? @{/user/project/save} : @{/user/project/update}"
+                  method="post" enctype="multipart/form-data">
+
+                <input type="hidden" th:if="${project.id != null}" name="id" th:value="${project.id}"/>
+
+                <div class="row g-3">
+                    <!-- Name -->
+                    <div class="col-md-8">
+                        <label class="form-label fw-semibold">Project Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control"
+                               th:value="${project.name}" placeholder="e.g. My Web App" required/>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="PLANNING" th:selected="${project.status == 'PLANNING'}">Planning</option>
+                            <option value="ACTIVE" th:selected="${project.status == 'ACTIVE'}">Active</option>
+                            <option value="ON_HOLD" th:selected="${project.status == 'ON_HOLD'}">On Hold</option>
+                            <option value="COMPLETED" th:selected="${project.status == 'COMPLETED'}">Completed</option>
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Description</label>
+                        <textarea name="description" class="form-control" rows="2"
+                                  placeholder="Brief description..." th:text="${project.description}"></textarea>
+                    </div>
+
+                    <!-- Briefing -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Full Briefing</label>
+                        <textarea name="briefing" class="form-control" rows="3"
+                                  placeholder="Detailed project goals, scope, deliverables..."
+                                  th:text="${project.briefing}"></textarea>
+                    </div>
+
+                    <!-- Priority -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Priority</label>
+                        <select name="priority" class="form-select">
+                            <option value="LOW" th:selected="${project.priority == 'LOW'}">Low</option>
+                            <option value="MEDIUM" th:selected="${project.priority == 'MEDIUM'}">Medium</option>
+                            <option value="HIGH" th:selected="${project.priority == 'HIGH'}">High</option>
+                            <option value="CRITICAL" th:selected="${project.priority == 'CRITICAL'}">Critical</option>
+                        </select>
+                    </div>
+
+                    <!-- Start Date -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Start Date</label>
+                        <input type="date" name="startDate" class="form-control"
+                               th:value="${project.startDate}"/>
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">End Date</label>
+                        <input type="date" name="endDate" class="form-control"
+                               th:value="${project.endDate}"/>
+                    </div>
+
+                    <!-- GitHub Link -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-github me-1"></i>GitHub Repository Link
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-github"></i></span>
+                            <input type="url" name="githubLink" class="form-control"
+                                   placeholder="https://github.com/username/repository"
+                                   th:value="${project.githubLink}"/>
+                        </div>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">
+                            <i class="bi bi-folder-symlink me-1"></i>Project Files (ZIP)
+                        </label>
+
+                        <!-- Show existing file -->
+                        <div th:if="${project.fileName != null}" class="alert alert-info py-2 mb-2">
+                            <i class="bi bi-file-zip me-1"></i>
+                            Current: <strong th:text="${project.fileName}"></strong>
+                            <span class="text-muted small ms-2">(Upload new file to replace)</span>
+                        </div>
+
+                        <div class="upload-area" onclick="document.getElementById('projectFile').click()">
+                            <i class="bi bi-cloud-upload fs-2 text-primary d-block mb-1"></i>
+                            <div class="fw-semibold text-primary">Click to upload ZIP file</div>
+                            <div class="text-muted small">ZIP, RAR, TAR, GZ accepted · Max 50MB</div>
+                            <div id="selectedFile" class="mt-2 small text-success fw-semibold"></div>
+                        </div>
+                        <input type="file" id="projectFile" name="projectFile"
+                               accept=".zip,.rar,.tar,.gz" class="d-none"
+                               onchange="document.getElementById('selectedFile').textContent = this.files[0]?.name ? '✓ ' + this.files[0].name + ' selected' : ''"/>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-save me-1"></i>
+                        <span th:text="${project.id == null} ? 'Create Project' : 'Save Changes'"></span>
+                    </button>
+                    <a th:href="@{/user/dashboard}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center py-3 mt-4 text-muted border-top" style="font-size:0.78rem;">&copy; 2026 Chaitanya. All rights reserved.</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

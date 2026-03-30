@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${project.name}">Project Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>
+        body { background: #f0f2f5; }
+        .detail-card { border: none; border-radius: 14px; box-shadow: 0 2px 14px rgba(0,0,0,0.08); }
+        .project-header { border-radius: 14px 14px 0 0; color: white; padding: 2rem; }
+        .member-card { background: #f8f9fa; border-radius: 10px; padding: 12px 16px; border-left: 4px solid #1565c0; }
+        .info-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: #6c757d; margin-bottom: 2px; }
+        .download-card { background: linear-gradient(135deg, #e3f0ff, #f0f7ff); border-radius: 12px; border: 1px solid #b3d4ff; padding: 1.2rem; }
+        .github-card { background: linear-gradient(135deg, #f5f5f5, #fafafa); border-radius: 12px; border: 1px solid #e0e0e0; padding: 1.2rem; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: userNavbar}"></div>
+
+<div class="container py-4" style="max-width: 800px;">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/user/dashboard}">My Projects</a></li>
+            <li class="breadcrumb-item active" th:text="${project.name}"></li>
+        </ol>
+    </nav>
+
+    <div class="card detail-card">
+        <div class="project-header"
+             th:style="${project.status == 'ACTIVE'} ? 'background:linear-gradient(135deg,#2e7d32,#388e3c)' :
+                        (${project.status == 'COMPLETED'} ? 'background:linear-gradient(135deg,#1565c0,#1976d2)' :
+                        (${project.status == 'ON_HOLD'} ? 'background:linear-gradient(135deg,#e65100,#ef6c00)' : 'background:linear-gradient(135deg,#37474f,#546e7a)'))">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3 class="fw-bold mb-1" th:text="${project.name}"></h3>
+                    <p class="opacity-75 mb-2" th:text="${project.description}"></p>
+                    <span class="badge bg-white text-dark" th:text="${project.status}"></span>
+                    <span class="badge bg-white text-dark ms-1" th:text="${project.priority}"></span>
+                </div>
+                <i class="bi bi-folder2-open" style="font-size:3rem; opacity:0.3;"></i>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+
+            <!-- Info Grid -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-md-3">
+                    <div class="info-label">Start Date</div>
+                    <div class="fw-semibold" th:text="${project.startDate != null ? project.startDate : '—'}"></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="info-label">End Date</div>
+                    <div class="fw-semibold" th:text="${project.endDate != null ? project.endDate : '—'}"></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="info-label">Status</div>
+                    <div class="fw-semibold" th:text="${project.status}"></div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="info-label">Team Size</div>
+                    <div class="fw-semibold" th:text="${project.teamMembers != null ? project.teamMembers.size() + ' members' : '0 members'}"></div>
+                </div>
+            </div>
+
+            <!-- Briefing -->
+            <div th:if="${project.briefing != null and !project.briefing.isEmpty()}" class="mb-4">
+                <h6 class="fw-bold"><i class="bi bi-file-text me-2"></i>Project Briefing</h6>
+                <div class="bg-light rounded p-3 text-muted" th:text="${project.briefing}"></div>
+            </div>
+
+            <!-- GitHub Link -->
+            <div th:if="${project.githubLink != null and !project.githubLink.isEmpty()}" class="mb-4">
+                <h6 class="fw-bold mb-2"><i class="bi bi-github me-2"></i>GitHub Repository</h6>
+                <div class="github-card d-flex align-items-center gap-3">
+                    <i class="bi bi-github fs-3"></i>
+                    <div>
+                        <div class="fw-semibold small">Repository Link</div>
+                        <a th:href="${project.githubLink}" target="_blank"
+                           class="text-break" th:text="${project.githubLink}"></a>
+                    </div>
+                    <a th:href="${project.githubLink}" target="_blank"
+                       class="btn btn-dark btn-sm ms-auto">
+                        <i class="bi bi-box-arrow-up-right me-1"></i>Open
+                    </a>
+                </div>
+            </div>
+
+            <!-- Project File Download -->
+            <div th:if="${project.fileName != null}" class="mb-4">
+                <h6 class="fw-bold mb-2"><i class="bi bi-folder-symlink me-2"></i>Project Files</h6>
+                <div class="download-card d-flex align-items-center gap-3">
+                    <i class="bi bi-file-zip fs-3 text-primary"></i>
+                    <div>
+                        <div class="fw-semibold small">Project ZIP File</div>
+                        <div class="text-muted small" th:text="${project.fileName}"></div>
+                    </div>
+                    <a th:href="@{/user/project/{id}/download(id=${project.id})}"
+                       class="btn btn-primary btn-sm ms-auto">
+                        <i class="bi bi-download me-1"></i>Download
+                    </a>
+                </div>
+            </div>
+
+            <!-- Team Members -->
+            <div>
+                <h6 class="fw-bold mb-3"><i class="bi bi-people me-2"></i>Team Members</h6>
+                <div th:if="${project.teamMembers != null and !project.teamMembers.empty}">
+                    <div class="row g-2">
+                        <div class="col-md-6" th:each="m : ${project.teamMembers}">
+                            <div class="member-card">
+                                <div class="fw-semibold" th:text="${m.name}"></div>
+                                <div class="text-muted small" th:text="${m.role}"></div>
+                                <div th:if="${m.email != null and !m.email.isEmpty()}"
+                                     class="text-muted small" th:text="${m.email}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div th:if="${project.teamMembers == null or project.teamMembers.empty}"
+                     class="text-muted fst-italic small">No team members assigned yet.</div>
+            </div>
+
+            <div class="alert alert-info mt-4">
+                <i class="bi bi-lock me-2"></i>
+                <strong>Read-only access.</strong> To request changes,
+                <a th:href="@{/user/contact}">contact the admin</a>.
+            </div>
+        </div>
+
+        <div class="card-footer bg-transparent border-0 px-4 pb-4">
+            <a th:href="@{/user/dashboard}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Back to My Projects
+            </a>
+        </div>
+    </div>
+</div>
+
+<footer class="text-center py-3 mt-4 text-muted border-top" style="font-size:0.78rem;">&copy; 2026 Chaitanya. All rights reserved.</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

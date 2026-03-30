@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ticket Detail</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>body { background: #f0f2f5; } .detail-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }</style>
+</head>
+<body>
+<div th:replace="~{fragments :: adminNavbar}"></div>
+<div class="container py-4" style="max-width:700px">
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/admin/tickets}">Tickets</a></li>
+            <li class="breadcrumb-item active" th:text="${ticket.subject}"></li>
+        </ol>
+    </nav>
+
+    <!-- Ticket Details -->
+    <div class="card detail-card mb-4">
+        <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <h5 class="fw-bold" th:text="${ticket.subject}"></h5>
+                <span class="badge"
+                      th:classappend="${ticket.status == 'OPEN'} ? 'bg-primary' : (${ticket.status == 'RESOLVED'} ? 'bg-success' : 'bg-warning text-dark')"
+                      th:text="${ticket.status}"></span>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <div class="text-muted small">From</div>
+                    <div class="fw-semibold" th:text="${ticket.submittedBy != null ? ticket.submittedBy.fullName + ' (@' + ticket.submittedBy.username + ')' : 'Unknown'}"></div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Priority</div>
+                    <span class="badge"
+                          th:classappend="${ticket.priority == 'HIGH'} ? 'bg-danger' : (${ticket.priority == 'MEDIUM'} ? 'bg-warning text-dark' : 'bg-info text-dark')"
+                          th:text="${ticket.priority}"></span>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Submitted</div>
+                    <div th:text="${#temporals.format(ticket.createdAt, 'dd MMM yyyy HH:mm')}"></div>
+                </div>
+                <div class="col-6">
+                    <div class="text-muted small">Email</div>
+                    <div th:text="${ticket.submittedBy != null ? ticket.submittedBy.email : '—'}"></div>
+                </div>
+            </div>
+            <div class="bg-light rounded p-3">
+                <div class="small text-muted mb-1">Message:</div>
+                <div th:text="${ticket.message}"></div>
+            </div>
+            <div th:if="${ticket.adminReply != null}" class="bg-success bg-opacity-10 rounded p-3 mt-3 border-start border-success border-3">
+                <div class="small text-success fw-semibold mb-1">Previous Admin Reply:</div>
+                <div th:text="${ticket.adminReply}"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reply Form -->
+    <div class="card detail-card">
+        <div class="card-body p-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-reply me-2"></i>Reply to Ticket</h6>
+            <form th:action="@{/admin/ticket/{id}/reply(id=${ticket.id})}" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Your Reply</label>
+                    <textarea name="reply" class="form-control" rows="4"
+                              placeholder="Type your reply here..." required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Update Status</label>
+                    <select name="status" class="form-select">
+                        <option value="OPEN" th:selected="${ticket.status == 'OPEN'}">Open</option>
+                        <option value="IN_PROGRESS" th:selected="${ticket.status == 'IN_PROGRESS'}">In Progress</option>
+                        <option value="RESOLVED" th:selected="${ticket.status == 'RESOLVED'}">Resolved</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send me-1"></i>Send Reply
+                    </button>
+                    <a th:href="@{/admin/tickets}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<footer class="text-center py-3 mt-4 text-muted border-top" style="font-size:0.78rem;">&copy; 2026 Chaitanya. All rights reserved.</footer>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

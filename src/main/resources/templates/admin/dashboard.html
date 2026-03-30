@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Admin Dashboard — Project Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>
+        body { background: #f0f2f5; }
+        .stat-card { border: none; border-radius: 12px; transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-icon { font-size: 2.5rem; opacity: 0.85; }
+        .table-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .badge-status { font-size: 0.78rem; padding: 5px 10px; border-radius: 20px; }
+        .priority-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments :: adminNavbar}"></div>
+
+<div class="container-fluid py-4 px-4">
+
+    <!-- Flash Messages -->
+    <div th:if="${successMsg}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        <span th:text="${successMsg}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Dashboard</h4>
+            <p class="text-muted mb-0">Welcome back, <span sec:authentication="name" class="fw-semibold"></span></p>
+        </div>
+        <a th:href="@{/admin/project/new}" class="btn btn-primary">
+            <i class="bi bi-plus-lg me-1"></i>New Project
+        </a>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-white" style="background:#1e3a5f;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon"><i class="bi bi-folder2-open"></i></div>
+                    <div>
+                        <div class="fs-3 fw-bold" th:text="${totalProjects}">0</div>
+                        <div class="small opacity-75">Total Projects</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-white" style="background:#2e7d32;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon"><i class="bi bi-lightning-charge"></i></div>
+                    <div>
+                        <div class="fs-3 fw-bold" th:text="${activeProjects}">0</div>
+                        <div class="small opacity-75">Active Projects</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-white" style="background:#1565c0;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+                    <div>
+                        <div class="fs-3 fw-bold" th:text="${completedProjects}">0</div>
+                        <div class="small opacity-75">Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card stat-card text-white" style="background:#6a1b9a;">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <div class="stat-icon"><i class="bi bi-people"></i></div>
+                    <div>
+                        <div class="fs-3 fw-bold" th:text="${totalUsers}">0</div>
+                        <div class="small opacity-75">Total Users</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Projects Table -->
+    <div class="card table-card">
+        <div class="card-header bg-white border-0 pt-3 pb-0 d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0"><i class="bi bi-table me-2"></i>All Projects</h6>
+            <a th:href="@{/admin/projects}" class="btn btn-sm btn-outline-secondary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Project</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Team</th>
+                            <th>End Date</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${projects}">
+                            <td class="ps-3">
+                                <div class="fw-semibold" th:text="${p.name}"></div>
+                                <div class="text-muted small" th:text="${#strings.abbreviate(p.description, 50)}"></div>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary" th:text="${p.owner != null ? p.owner.username : 'Unassigned'}"></span>
+                            </td>
+                            <td>
+                                <span class="badge-status badge"
+                                      th:classappend="${p.status == 'ACTIVE'} ? 'bg-success' : (${p.status == 'COMPLETED'} ? 'bg-primary' : (${p.status == 'ON_HOLD'} ? 'bg-warning text-dark' : 'bg-info text-dark'))"
+                                      th:text="${p.status}">
+                                </span>
+                            </td>
+                            <td>
+                                <span class="priority-dot"
+                                      th:style="${p.priority == 'CRITICAL'} ? 'background:#d32f2f' : (${p.priority == 'HIGH'} ? 'background:#f57c00' : (${p.priority == 'MEDIUM'} ? 'background:#388e3c' : 'background:#757575'))">
+                                </span>
+                                <span class="small" th:text="${p.priority}"></span>
+                            </td>
+                            <td>
+                                <span th:text="${p.teamMembers != null ? p.teamMembers.size() : 0}"></span>
+                                <span class="text-muted small">members</span>
+                            </td>
+                            <td>
+                                <span class="small" th:text="${p.endDate != null ? p.endDate : '—'}"></span>
+                            </td>
+                            <td class="text-end pe-3">
+                                <a th:href="@{/admin/project/edit/{id}(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-primary me-1">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a th:href="@{/admin/project/delete/{id}(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Delete this project and all its data?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        <tr th:if="${projects.empty}">
+                            <td colspan="7" class="text-center py-4 text-muted">
+                                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                                No projects yet. <a th:href="@{/admin/project/new}">Create one</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<footer class="text-center py-3 mt-4 text-muted border-top" style="font-size:0.78rem;">&copy; 2026 Chaitanya. All rights reserved.</footer>
+</body>
+</html>

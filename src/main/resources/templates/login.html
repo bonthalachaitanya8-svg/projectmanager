@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Login — Project Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet"/>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Segoe UI', sans-serif; overflow: hidden;
+        }
+        canvas#particles { position: fixed; top: 0; left: 0; z-index: 0; }
+        .login-wrapper { position: relative; z-index: 1; width: 100%; max-width: 440px; padding: 20px; }
+        .login-card {
+            background: rgba(255,255,255,0.07);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+            animation: slideUp 0.7s cubic-bezier(0.16,1,0.3,1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .login-header {
+            background: linear-gradient(135deg, #1e3a5f, #1565c0);
+            padding: 2rem; text-align: center;
+        }
+        .login-header .brand-icon { font-size: 3rem; color: #00b4d8; margin-bottom: 0.5rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+        .login-header h4 { color: white; font-weight: 700; margin-bottom: 0.25rem; }
+        .login-header p { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+        .login-body { padding: 2rem; }
+        .form-control {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: white; border-radius: 10px; padding: 0.75rem 1rem;
+            transition: all 0.3s;
+        }
+        .form-control::placeholder { color: rgba(255,255,255,0.4); }
+        .form-control:focus {
+            background: rgba(255,255,255,0.15); border-color: #00b4d8;
+            box-shadow: 0 0 0 3px rgba(0,180,216,0.25); color: white;
+        }
+        .form-label { color: rgba(255,255,255,0.85); font-weight: 500; font-size: 0.9rem; }
+        .input-group-text { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.6); }
+        .btn-login {
+            background: linear-gradient(135deg, #00b4d8, #0096c7);
+            border: none; border-radius: 10px; padding: 0.8rem;
+            font-size: 1rem; font-weight: 600; color: white; width: 100%;
+            transition: all 0.3s; position: relative; overflow: hidden;
+        }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,180,216,0.4); color: white; }
+        .btn-login:active { transform: translateY(0); }
+        .btn-signup {
+            background: transparent; border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 10px; padding: 0.7rem; font-size: 1rem;
+            font-weight: 600; color: rgba(255,255,255,0.85); width: 100%;
+            transition: all 0.3s; text-decoration: none; display: block; text-align: center;
+        }
+        .btn-signup:hover { border-color: #00b4d8; color: #00b4d8; background: rgba(0,180,216,0.1); }
+        .divider { display: flex; align-items: center; gap: 10px; color: rgba(255,255,255,0.3); font-size: 0.85rem; margin: 1.2rem 0; }
+        .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.15); }
+        .alert-danger { background: rgba(220,53,69,0.2); border: 1px solid rgba(220,53,69,0.4); color: #ff6b6b; border-radius: 10px; }
+        .alert-success { background: rgba(40,167,69,0.2); border: 1px solid rgba(40,167,69,0.4); color: #69db7c; border-radius: 10px; }
+        footer { color: rgba(255,255,255,0.3); font-size: 0.78rem; text-align: center; margin-top: 1.5rem; }
+    </style>
+</head>
+<body>
+<canvas id="particles"></canvas>
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="brand-icon"><i class="bi bi-kanban-fill"></i></div>
+            <h4>Project Manager</h4>
+            <p>Sign in to your account</p>
+        </div>
+        <div class="login-body">
+            <div th:if="${param.error}" class="alert alert-danger d-flex align-items-center mb-3">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i> Invalid username or password.
+            </div>
+            <div th:if="${param.logout}" class="alert alert-success d-flex align-items-center mb-3">
+                <i class="bi bi-check-circle-fill me-2"></i> Logged out successfully.
+            </div>
+            <div th:if="${param.registered}" class="alert alert-success d-flex align-items-center mb-3">
+                <i class="bi bi-check-circle-fill me-2"></i> Account created! You can now log in.
+            </div>
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus/>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" class="form-control" placeholder="Enter your password" required/>
+                    </div>
+                </div>
+                <button type="submit" class="btn-login mb-2">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+                </button>
+            </form>
+            <div class="divider">or</div>
+            <a th:href="@{/signup}" class="btn-signup">
+                <i class="bi bi-person-plus me-2"></i>Create New Account
+            </a>
+        </div>
+    </div>
+    <footer>&copy; 2026 Chaitanya. All rights reserved.</footer>
+</div>
+<script>
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+const particles = Array.from({length: 80}, () => ({
+    x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+    r: Math.random() * 2.5 + 0.5, dx: (Math.random()-0.5)*0.5, dy: (Math.random()-0.5)*0.5,
+    o: Math.random() * 0.5 + 0.1
+}));
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(0,180,216,${p.o})`; ctx.fill();
+        p.x += p.dx; p.y += p.dy;
+        if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
+    });
+    // Draw connecting lines
+    particles.forEach((a, i) => {
+        particles.slice(i+1).forEach(b => {
+            const dist = Math.hypot(a.x-b.x, a.y-b.y);
+            if (dist < 100) {
+                ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+                ctx.strokeStyle = `rgba(0,180,216,${0.15*(1-dist/100)})`; ctx.lineWidth=0.5; ctx.stroke();
+            }
+        });
+    });
+    requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>

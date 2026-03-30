@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: projectmanager
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: DATABASE_URL
+        fromDatabase:
+          name: projectmanager-db
+          property: connectionString
+
+databases:
+  - name: projectmanager-db
+    plan: free
