@@ -52,9 +52,6 @@ http://localhost:8080/login
 | Role  | Username | Password  |
 |-------|----------|-----------|
 | Admin | admin    | admin123  |
-| User  | alice    | alice123  |
-| User  | bob      | bob123    |
-| User  | carol    | carol123  |
 
 ---
 
